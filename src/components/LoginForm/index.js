@@ -9,9 +9,62 @@ import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
 import logo from '../../assets/logo.svg';
 
+function isValidPassword(password) {
+  
+  let has_atleast_8_characters = false;
+  let has_uppercase = false;
+  let has_lowercase = false;
+  let has_digit = false;
+  let has_special_char = false;
+  const nonAlphanumeric = /[^a-zA-Z0-9 ]/
+
+  // Password must be at least 8 characters long
+  if (password.length > 8) {
+      has_atleast_8_characters = True
+  }
+  for (const char in password) {
+    if ('A' <= char <= 'Z') { // Check for uppercase
+      has_uppercase = True        
+    }  
+    else if ('a' <= char <= 'z') { // Check for lowercase
+        has_lowercase = True
+    }
+    
+    if ('0' <= char <= '9') { // Check for digit
+      has_digit = true;
+    }
+    if (nonAlphanumeric.test(char)) { // Check for special character
+      has_special_char = true;
+    }  
+  }
+  
+  if (has_atleast_8_characters && has_uppercase && has_lowercase && has_digit && has_special_char) {
+      return true;
+  } else { 
+    if (!has_atleast_8_characters) {
+      console.log("Password must be at least 8 characters long");
+    }  
+    // Optional optimization: if both are found, we can stop early
+    if (!has_uppercase || !has_lowercase) {
+      console.log("Password must contain at least one uppercase letter and one lowercase letter");
+    }
+    if (!has_digit) {
+      console.log("Password must contain at least one digit");
+    }
+    if (!has_special_char) {
+      console.log("Password must contain at least one special character");
+    }
+    return false;
+  }
+
+    
+}  
+
+const validator = require("email-validator");
 
 export default function LoginForm() {
   const [showAlert, setShowAlert] = useState(false);
+
   const validateForm = (event) => {
     event.preventDefault()
     const data = new FormData(event.currentTarget);
@@ -19,6 +72,12 @@ export default function LoginForm() {
     const password = data.get('password');
 
     // Add validation code here
+    // Validate email format with "email-validator" package
+    
+    if (validator.validate(email) && isValidPassword(password)) {
+      setShowAlert(true);
+    }
+
 
   }
 
@@ -30,7 +89,7 @@ export default function LoginForm() {
       password: data.get('password'),
     });
     validateForm(event);
-    setShowAlert("Login Successful");
+    // setShowAlert("Login Successful");
   };
 
   return (
@@ -87,6 +146,8 @@ export default function LoginForm() {
               name="email"
               autoComplete="email"
               autoFocus
+              error={!validator.validate(email)}
+              helperText={!validator.validate(email) ? "Invalid email format" : ""}
             />
             <TextField
               margin="normal"
@@ -97,6 +158,8 @@ export default function LoginForm() {
               type="password"
               id="password"
               autoComplete="current-password"
+              error={!isValidPassword(password)}
+              helperText={!isValidPassword(password) ? "Password must be at least 8 characters long and include uppercase, lowercase, digit, and special character" : ""}
             />
             <Button
               type="submit"
